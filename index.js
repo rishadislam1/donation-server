@@ -54,6 +54,7 @@ const client = new MongoClient(uri, {
 const menuCollection = client.db("bistroDb").collection("menu");
 const cartCollection = client.db("bistroDb").collection("carts");
 const userCollection = client.db('bistroDb').collection('users');
+const paymentCollection = client.db('bistroDb').collection('payment');
 
 
 // verify admin
@@ -81,12 +82,12 @@ app.get('/users', async (req,res)=>{
 // emial same
 // admin check
 
-app.get('/user/admin/:email', verifyJWT, async(req,res)=>{
+app.get('/user/admin/:email', async(req,res)=>{
   const email = req.params.email;
 
-  if(req.decoded.email !== email){
-    res.send({admin: false})
-  }
+  // if(req.decoded.email !== email){
+  //   res.send({admin: false})
+  // }
 
   const query = {email: email};
 
@@ -144,115 +145,6 @@ app.post('/login', async (req,res)=>{
 
 
   res.send({ accessToken: token, message: 'Login successful', newUser });
-})
-
-app.patch('/updateuser/:id', async(req,res)=>{
-  const id = req.params.id;
-  const filter = {_id: new ObjectId(id)};
-  const updateDoc = {
-    $set: {
-      role: 'admin'
-    }
-  }
-  const result = await userCollection.updateOne(filter,updateDoc);
-  res.send(result);
-})
-
-
-app.delete('/deleteuser/:id', async (req,res)=>{
-  const id = req.params.id;
-  const query = {_id: new ObjectId(id)};
-  const result = await userCollection.deleteOne(query);
-})
-
-
-// menu code start
-// menu get
-app.get('/menu', async(req,res)=>{
-    const result = await menuCollection.find().toArray();
-    res.send(result);
-})
-
-app.get('/menusix', async(req,res)=>{
-  
- 
-  const randomItems = await menuCollection.aggregate([{$sample:{size:6}}]).toArray();
-
-    res.send(randomItems);
-
-})
-app.get('/menucard', async (req,res)=>{
-  const menucard = await menuCollection.aggregate([{$sample:{size:3}}]).toArray();
-  res.send(menucard);
-})
-
-app.post('/menu', async(req,res)=>{
-  const data = req.body;
-
-  const result = menuCollection.insertOne(data);
-  res.send(result);
-})
-
-
-// cart collection related work
-
-app.get('/carts', verifyJWT, async(req,res)=>{
-  const email = req.query.email;
-  if(!email){
-    res.send([]);
-  }
-  const decodedEmail = req?.decoded?.email;
- 
-  if(email!== decodedEmail){
-    res.status(403).send({error:true, message: "Forbidden Access"})
-  }
-  else{
-    const query = {email: email};
-    const result = await cartCollection.find(query).toArray();
-    res.send(result);
-  }
-})
-
-// app.get('/carts', async(req,res)=>{
-//   const email = req.query.email;
-//   if(!email){
-//     res.send([]);
-//   }
-
-
-//     const query = {email: email};
-//     const result = await cartCollection.find(query).toArray();
-//     res.send(result);
-  
-// })
-
-// alternative end
-app.post('/carts', async(req,res)=>{
-  const item = req.body;
-
-  const result = cartCollection.insertOne(item);
-  res.send(result);
-})
-
-app.delete('/carts/:id', async(req,res)=>{
-  const id = req.params.id;
-  const query = {_id: new ObjectId(id)};
-  const result = await cartCollection.deleteOne(query);
-})
-
-// payment related api
-
-app.post('/create-payment-intent', async(req,res)=>{
-  const {price} = req.body;
-  const amount = price*100;
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: amount,
-    currency: "usd",
-    payment_method_types: ['card']
-  });
-  res.send({
-    clientSecret: paymentIntent.client_secret
-  })
 })
 
 
