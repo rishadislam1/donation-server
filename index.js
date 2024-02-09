@@ -54,6 +54,7 @@ const client = new MongoClient(uri, {
       const database = client.db('donation');
       const userCollection = database.collection('user');
       const addCategoryCollection = database.collection('addCategory');
+      const categoryDetailsCollection = database.collection('categoryDetails');
 
 
 // verify admin
@@ -160,9 +161,25 @@ app.post('/addcategory/:email', verifyJWT, verifyAdmin, async(req,res)=>{
 
 // get category
 
-app.get('/getcategory/:email',verifyJWT, verifyAdmin , async(req,res)=>{
+app.get('/getcategory', async(req,res)=>{
   const result = await addCategoryCollection.find().toArray();
   res.send({status: true, result});
+})
+
+// delete category
+
+app.delete('/deleteCategory/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)};
+  const result = await addCategoryCollection.deleteOne(query);
+  res.send(result);
+});
+
+// add category details
+app.post('/categoryDetails/:email',verifyJWT,verifyAdmin, async(req,res)=>{
+  const data = req.body;
+  const result = categoryDetailsCollection.insertOne(data);
+  res.send({status:true, result})
 })
 
 
