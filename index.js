@@ -182,6 +182,13 @@ app.post('/categoryDetails/:email',verifyJWT,verifyAdmin, async(req,res)=>{
   res.send({status:true, result})
 })
 
+// get category details
+
+app.get('/getcategorydetails', async(req,res)=>{
+  const result = await categoryDetailsCollection.find().toArray();
+  res.send({status: true, result});
+})
+
 
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
