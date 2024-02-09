@@ -158,6 +158,13 @@ app.post('/addcategory/:email', verifyJWT, verifyAdmin, async(req,res)=>{
   res.send({status: true, result});
 })
 
+// get category
+
+app.get('/getcategory/:email',verifyJWT, verifyAdmin , async(req,res)=>{
+  const result = await addCategoryCollection.find().toArray();
+  res.send({status: true, result});
+})
+
 
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
@@ -170,9 +177,9 @@ app.post('/addcategory/:email', verifyJWT, verifyAdmin, async(req,res)=>{
   run().catch(console.dir);
 
 app.get('/',(req,res)=>{
-    res.send('Bistro Is Running');
+    res.send('Donation Is Running');
 })
 
 app.listen(port, ()=>{
-    console.log(`Bistro is running on port ${port}`);
+    console.log(`Donation is running on port ${port}`);
 })
