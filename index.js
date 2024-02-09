@@ -51,15 +51,14 @@ const client = new MongoClient(uri, {
       await client.connect();
 // write my own db code here
 
-const menuCollection = client.db("bistroDb").collection("menu");
-const cartCollection = client.db("bistroDb").collection("carts");
-const userCollection = client.db('bistroDb').collection('users');
-const paymentCollection = client.db('bistroDb').collection('payment');
+      const database = client.db('donation');
+      const userCollection = database.collection('user');
+      const addCategoryCollection = database.collection('addCategory');
 
 
 // verify admin
 
-const verifyAdmin = async(req,res)=>{
+const verifyAdmin = async(req,res,next)=>{
   const email = req.decoded.email;
   const query = {email: email}
   const user = await userCollection.findOne(query);
@@ -104,21 +103,23 @@ app.post('/register', async(req,res)=>{
     hashedPassword = await bcrypt.hash(password, saltRounds);
   }
   const query = {email: email}
-  const existingUser = await userCollection.findOne(query);
+  const result = await userCollection.findOne(query);
   const token = jwt.sign({email,name}, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: '10h',
   });
-  if(existingUser){
-    return res.send({accessToken:token,message: 'EMAIL ALREADY EXISTS'})
+  if(result || email === null){
+    return res.send({result, accessToken:token,message: 'EMAIL ALREADY EXISTS'})
   }
-  const result = userCollection.insertOne({
-    email,
-    name,
-    password: hashedPassword || null,
-    role: "user"
-  });
-
-  res.send({ accessToken: token, message: 'Registration successful', result });
+  else{
+    const result = userCollection.insertOne({
+      email,
+      name,
+      password: hashedPassword || null,
+      role: "user"
+    });
+  
+    res.send({ accessToken: token, message: 'Registration successful', result });
+  }
 
 })
 
@@ -126,11 +127,11 @@ app.post('/login', async (req,res)=>{
   const {email,password} = req.body;
   const user = await userCollection.findOne({email});
   if(!user){
-    return res.send({message: "Invalid Email"});
+    return res.send({status: false, message: "Invalid Email"});
   }
   const passwordMatch = await bcrypt.compare(password,user.password);
   if(!passwordMatch){
-    return res.send({message: "Invalid Password"});
+    return res.send({status: false, message: "Invalid Password"});
   }
 
   const token  = jwt.sign({email: user.email, name: user.name}, process.env.ACCESS_TOKEN_SECRET,{
@@ -145,6 +146,16 @@ app.post('/login', async (req,res)=>{
 
 
   res.send({ accessToken: token, message: 'Login successful', newUser });
+})
+
+// category apis
+
+// add Category
+
+app.post('/addcategory/:email', verifyJWT, verifyAdmin, async(req,res)=>{
+  const data = req.body;
+  const result = addCategoryCollection.insertOne(data);
+  res.send({status: true, result});
 })
 
 
