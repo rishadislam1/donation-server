@@ -280,6 +280,23 @@ app.get('/getalldonation/:email', verifyJWT, verifyAdmin, async(req,res)=>{
   res.send(result);
 })
 
+// patch donation data
+
+app.patch('/acceptstatus/:email/:userEmail', verifyJWT, verifyAdmin, async(req,res)=>{
+  const {userEmail} = req.params;
+  const query = {userEmail: userEmail}
+ 
+  const updateDoc = {
+    $set: {
+      status: "accept"
+    },
+  };
+ 
+  const result = await donationCollection.updateOne(query,updateDoc);
+  console.log(result)
+  res.send(result);
+})
+
 // all api end
 
       // Send a ping to confirm a successful connection
