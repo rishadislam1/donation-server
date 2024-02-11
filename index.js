@@ -340,6 +340,14 @@ app.get('/getvolunteer', async(req,res)=>{
   res.send(result);
 })
 
+// delete volunteer
+
+app.delete('/deletevolunteer/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)};
+  const result = await volunteerCollection.deleteOne(query);
+  res.send({status: true, result});
+});
 
 // all api end
 
