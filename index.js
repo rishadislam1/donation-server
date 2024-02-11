@@ -98,6 +98,7 @@ const client = new MongoClient(uri, {
       const categoryDetailsCollection = database.collection('categoryDetails');
       const donationCollection = database.collection('donationAmounts')
       const volunteerCollection = database.collection('volunteer');
+      const volunteerRequestCollection = database.collection('volunteerRequest');
 
 
 // verify admin
@@ -348,6 +349,32 @@ app.delete('/deletevolunteer/:email/:id', verifyJWT, verifyAdmin, async(req,res)
   const result = await volunteerCollection.deleteOne(query);
   res.send({status: true, result});
 });
+
+
+// volunteer request apis
+
+app.post('/addvolunteerrequest', async(req,res)=>{
+  const data = req.body;
+  const query = {email: data.email};
+  const findEmail = await volunteerCollection.findOne(query);
+  if(findEmail){
+    return res.send({status:false, message:"Email Already Exists"})
+  }
+  else{
+    const data1 ={
+      ...data, status: "pending"
+    }
+    const result = await volunteerRequestCollection.insertOne(data);
+    res.send({status: true, result})
+  }
+})
+
+// volunteer request get
+
+app.get('/getvolunteerrequestdata', async(req,res)=>{
+  const result = await volunteerRequestCollection.find().toArray();
+  res.send(result);
+})
 
 // all api end
 
