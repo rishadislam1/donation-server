@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const nodemailer = require("nodemailer");
 const port = process.env.PORT || 5000;
 const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -15,6 +16,46 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 app.use(cors());
 app.use(express.json());
 
+// mailer function
+
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: true,
+  auth: {
+    
+    user: process.env.SMTP_MAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
+
+app.post('/sendEmail', async (req,res)=>{
+  const {email, subject, message} = req.body;
+  var mailOptions = {
+    from:{
+      name: "Donation",
+      address: process.env.SMTP_MAIL
+    },
+    to:email,
+    subject:subject,
+    text:message,
+  };
+
+  await transporter.sendMail(mailOptions, function(error,info){
+    if(error){
+      console.log(error);
+      res.send({message:'error'})
+    }
+    else{
+      res.send({message: "success"})
+    }
+  })
+}
+)
+
+// mailer end mongo start
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.izzbewl.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -55,6 +96,7 @@ const client = new MongoClient(uri, {
       const userCollection = database.collection('user');
       const addCategoryCollection = database.collection('addCategory');
       const categoryDetailsCollection = database.collection('categoryDetails');
+      const donationCollection = database.collection('donationAmounts')
 
 
 // verify admin
@@ -189,6 +231,47 @@ app.get('/getcategorydetails', async(req,res)=>{
   res.send({status: true, result});
 })
 
+// get one category details
+
+app.get('/getonecategory/:id', async(req,res)=>{
+  const id=req.params.id;
+  const query = {_id: new ObjectId(id)};
+  const result = await categoryDetailsCollection.findOne(query);
+  res.send(result);
+})
+
+
+// deletecategorydetails
+
+app.delete('/deletecategorydetails/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const id = req.params.id;
+  const query = {_id: new ObjectId(id)};
+  const result = await categoryDetailsCollection.deleteOne(query);
+  res.send(result);
+});
+
+// donation amounts data
+
+app.post('/paydonation', verifyJWT, async(req,res)=>{
+  const bodyData = req.body;
+  const status = 'pending'
+  const data = {
+    ...bodyData,status
+  }
+  const result = await donationCollection.insertOne(data);
+  res.send(result);
+})
+
+// get donation
+
+app.get('/getdonation/:userEmail', verifyJWT, async(req,res)=>{
+  const {userEmail} = req.params;
+ 
+  const query = {userEmail: userEmail}
+  console.log(query)
+  const result = await donationCollection.find().toArray(query);
+  res.send(result);
+})
 
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
