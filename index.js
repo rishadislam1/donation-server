@@ -264,14 +264,23 @@ app.post('/paydonation', verifyJWT, async(req,res)=>{
 
 // get donation
 
-app.get('/getdonation/:userEmail', verifyJWT, async(req,res)=>{
+app.get('/getdonation/:userEmail',verifyJWT, async(req,res)=>{
   const {userEmail} = req.params;
  
   const query = {userEmail: userEmail}
-  console.log(query)
-  const result = await donationCollection.find().toArray(query);
+  const result = await donationCollection.find(query).toArray();
   res.send(result);
 })
+
+// get all donation
+
+app.get('/getalldonation/:email', verifyJWT, verifyAdmin, async(req,res)=>{
+
+  const result = await donationCollection.find().toArray();
+  res.send(result);
+})
+
+// all api end
 
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
