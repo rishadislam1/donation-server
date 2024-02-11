@@ -282,9 +282,9 @@ app.get('/getalldonation/:email', verifyJWT, verifyAdmin, async(req,res)=>{
 
 // patch donation data
 
-app.patch('/acceptstatus/:email/:userEmail', verifyJWT, verifyAdmin, async(req,res)=>{
-  const {userEmail} = req.params;
-  const query = {userEmail: userEmail}
+app.patch('/acceptstatus/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const {id} = req.params;
+  const query = {_id: new ObjectId(id)}
  
   const updateDoc = {
     $set: {
@@ -293,6 +293,23 @@ app.patch('/acceptstatus/:email/:userEmail', verifyJWT, verifyAdmin, async(req,r
   };
  
   const result = await donationCollection.updateOne(query,updateDoc);
+  res.send(result);
+})
+
+// reject donation
+
+app.patch('/rejectstatus/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const {id} = req.params;
+  const query = {_id: new ObjectId(id)};
+ 
+  const updateDoc = {
+    $set: {
+      status: "rejected",
+      mainAmount: 0
+    },
+  };
+ 
+  const result = await donationCollection.updateMany(query,updateDoc);
   console.log(result)
   res.send(result);
 })
