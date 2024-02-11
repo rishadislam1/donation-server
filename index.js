@@ -376,6 +376,48 @@ app.get('/getvolunteerrequestdata', async(req,res)=>{
   res.send(result);
 })
 
+app.get('/onevolunteerrequest/:email', async(req,res)=>{
+  const email = req.params.email;
+  const query = {email:email}
+  const result = await volunteerRequestCollection.find(query).toArray();
+  res.send(result);
+})
+
+// volunteer request accept
+
+app.patch('/acceptvolunteer/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const {id} = req.params;
+  const query = {_id: new ObjectId(id)}
+  const data= req.body;
+ 
+  const updateDoc = {
+    $set: {
+      status: "accept"
+    },
+  };
+  await volunteerCollection.insertOne(data);
+ 
+  const result = await volunteerRequestCollection.updateOne(query,updateDoc);
+  res.send(result);
+})
+
+// reject volunteer request
+
+app.patch('/rejectvolunteer/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
+  const {id} = req.params;
+  const query = {_id: new ObjectId(id)};
+ 
+  const updateDoc = {
+    $set: {
+      status: "rejected",
+    },
+  };
+ 
+  const result = await volunteerRequestCollection.updateOne(query,updateDoc);
+  console.log(result)
+  res.send(result);
+})
+
 // all api end
 
       // Send a ping to confirm a successful connection
