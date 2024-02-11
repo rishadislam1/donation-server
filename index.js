@@ -314,6 +314,17 @@ app.patch('/rejectstatus/:email/:id', verifyJWT, verifyAdmin, async(req,res)=>{
   res.send(result);
 })
 
+// delete donation
+
+app.delete('/deletedonation/:email/:id', async(req,res)=>{
+  const {id} = req.params;
+  const query = {_id: new ObjectId(id)};
+
+  const result = await donationCollection.deleteOne(query);
+  res.send(result);
+})
+
+
 // all api end
 
       // Send a ping to confirm a successful connection
