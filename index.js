@@ -333,6 +333,14 @@ app.post('/addvolunteer/:email',verifyJWT,verifyAdmin, async(req,res)=>{
   res.send(result)
 })
 
+// get volunteer
+
+app.get('/getvolunteer', async(req,res)=>{
+  const result = await volunteerCollection.find().toArray();
+  res.send(result);
+})
+
+
 // all api end
 
       // Send a ping to confirm a successful connection
