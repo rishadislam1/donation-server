@@ -97,6 +97,7 @@ const client = new MongoClient(uri, {
       const addCategoryCollection = database.collection('addCategory');
       const categoryDetailsCollection = database.collection('categoryDetails');
       const donationCollection = database.collection('donationAmounts')
+      const volunteerCollection = database.collection('volunteer');
 
 
 // verify admin
@@ -324,6 +325,13 @@ app.delete('/deletedonation/:email/:id', async(req,res)=>{
   res.send(result);
 })
 
+// volunteer apis
+
+app.post('/addvolunteer/:email',verifyJWT,verifyAdmin, async(req,res)=>{
+  const data = req.body;
+  const result = volunteerCollection.insertOne(data);
+  res.send(result)
+})
 
 // all api end
 
