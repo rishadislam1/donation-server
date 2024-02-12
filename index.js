@@ -361,10 +361,11 @@ app.post('/addvolunteerrequest', async(req,res)=>{
     return res.send({status:false, message:"Email Already Exists"})
   }
   else{
+    const status = 'pending'
     const data1 ={
-      ...data, status: "pending"
+      ...data, status
     }
-    const result = await volunteerRequestCollection.insertOne(data);
+    const result = await volunteerRequestCollection.insertOne(data1);
     res.send({status: true, result})
   }
 })
