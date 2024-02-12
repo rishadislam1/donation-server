@@ -419,6 +419,20 @@ app.patch('/rejectvolunteer/:email/:id', verifyJWT, verifyAdmin, async(req,res)=
   res.send(result);
 })
 
+// search api
+
+app.get('/search/:key', async(req,res)=>{
+
+  const result = await categoryDetailsCollection.find({
+    "$or": [
+      {name: {$regex: req.params.key}},
+      {categoryName: {$regex: req.params.key}},
+      {description: {$regex: req.params.key}}
+    ]
+  }).toArray();
+  res.send(result);
+})
+
 // all api end
 
       // Send a ping to confirm a successful connection
