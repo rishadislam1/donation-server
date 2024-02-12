@@ -276,7 +276,7 @@ app.get('/getdonation/:userEmail',verifyJWT, async(req,res)=>{
 
 // get all donation
 
-app.get('/getalldonation/:email', verifyJWT, verifyAdmin, async(req,res)=>{
+app.get('/getalldonation', async(req,res)=>{
 
   const result = await donationCollection.find().toArray();
   res.send(result);
